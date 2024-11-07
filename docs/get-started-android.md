@@ -2,29 +2,40 @@
 
 ## create native project and update CMakeLists.txt
 
-```
+```cmake
 if(NOT TARGET dobby)
-set(DOBBY_DIR /Users/jmpews/Workspace/Project.wrk/Dobby)
-macro(SET_OPTION option value)
-  set(${option} ${value} CACHE INTERNAL "" FORCE)
-endmacro()
-SET_OPTION(DOBBY_DEBUG OFF)
-SET_OPTION(DOBBY_GENERATE_SHARED OFF)
-add_subdirectory(${DOBBY_DIR} dobby)
-get_property(DOBBY_INCLUDE_DIRECTORIES
-  TARGET dobby
-  PROPERTY INCLUDE_DIRECTORIES)
-include_directories(
-  .
-  ${DOBBY_INCLUDE_DIRECTORIES}
-  $<TARGET_PROPERTY:dobby,INCLUDE_DIRECTORIES>
-)
+    # 使用相对路径，因为 Dobby 目录就在当前 CMakeLists.txt 同级目录下
+    set(DOBBY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Dobby)
+
+    macro(SET_OPTION option value)
+        set(${option} ${value} CACHE INTERNAL "" FORCE)
+    endmacro()
+
+    SET_OPTION(DOBBY_DEBUG OFF)
+    SET_OPTION(DOBBY_GENERATE_SHARED OFF)
+
+    add_subdirectory(${DOBBY_DIR} dobby)
+
+    get_property(DOBBY_INCLUDE_DIRECTORIES
+            TARGET dobby
+            PROPERTY INCLUDE_DIRECTORIES)
+
+    include_directories(
+            .
+            ${DOBBY_INCLUDE_DIRECTORIES}
+            $<TARGET_PROPERTY:dobby,INCLUDE_DIRECTORIES>
+    )
 endif()
 
-add_library(native-lib SHARED
-  ${DOBBY_DIR}/example/android_common_api.cc
+add_library(${CMAKE_PROJECT_NAME} SHARED
+        native-lib.cpp
+        )
 
-  native-lib.cpp)
+
+target_link_libraries(${CMAKE_PROJECT_NAME}
+        dobby
+        android
+        log)
 ```
 
 ## replace hook function
